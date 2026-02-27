@@ -1,0 +1,6 @@
+@ZenbridgeErpIntegration_HostAddress = http://localhost:5002
+
+GET {{ZenbridgeErpIntegration_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
