@@ -6,6 +6,7 @@ builder.Services.AddDbContext<ErpDbContext>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -49,6 +50,42 @@ app.MapGet("/erp/orders", async (ErpDbContext db) =>
     return Results.Ok(orders);
 });
 
+app.MapPost("/erp/orders/{id}/send-invoice", async (int id, ErpDbContext db, IHttpClientFactory httpClientFactory) =>
+{
+    Console.WriteLine($"\n[ERP SYSTEM] Generating Invoice for Order ID: {id}...");
+
+    var order = await db.PurchaseOrders.FindAsync(id);
+    if (order == null) 
+    {
+        return Results.NotFound(new { error = "Order not found in ERP database." });
+    }
+
+    var invoicePayload = new ZenbridgeOutbound810Dto
+    {
+        receiver_id = order.PartnerId,
+        po_reference = order.PoNumber,
+        invoice_date = DateTime.UtcNow.ToString("yyyy-MM-dd"), 
+        total_amount = order.TotalAmount
+    };
+
+    var client = httpClientFactory.CreateClient();
+    var zenbridgeApiUrl = "https://postman-echo.com/post"; 
+    
+    Console.WriteLine($"[NETWORK] Sending 810 Invoice payload to {zenbridgeApiUrl}...");
+    var response = await client.PostAsJsonAsync(zenbridgeApiUrl, invoicePayload);
+
+    if (response.IsSuccessStatusCode)
+    {
+        Console.WriteLine("[SUCCESS] Invoice successfully received by Zenbridge!");
+        return Results.Ok(new { 
+            message = "Invoice 810 transmitted successfully.", 
+            sent_payload = invoicePayload 
+        });
+    }
+
+    return Results.Problem("Failed to communicate with Zenbridge API.");
+});
+
 app.Run();
 
 class ZenbridgeInbound850Dto
@@ -84,6 +121,15 @@ class PoLineItem
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public int PurchaseOrderId { get; set; }
+}
+// --- Zenbridge Outbound JSON Payload (810 Invoice) ---
+class ZenbridgeOutbound810Dto
+{
+    public string document_type { get; set; } = "810"; // Always 810 for Invoices
+    public required string receiver_id { get; set; }
+    public required string po_reference { get; set; }
+    public required string invoice_date { get; set; }
+    public decimal total_amount { get; set; }
 }
 
 class ErpDbContext : DbContext
