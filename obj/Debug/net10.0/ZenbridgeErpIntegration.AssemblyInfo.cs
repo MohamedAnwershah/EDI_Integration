@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ZenbridgeErpIntegration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d64b93d87874aeed2d662798601b51c21d879f2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+60121664826543a15fb24b6ec9d3197b08877fc6")]
 [assembly: System.Reflection.AssemblyProductAttribute("ZenbridgeErpIntegration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ZenbridgeErpIntegration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
